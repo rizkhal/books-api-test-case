@@ -1,0 +1,60 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+model Member {
+    id            Int             @id @default(autoincrement())
+    code          String          @unique @db.VarChar(150)
+    name          String          @db.VarChar(150)
+    createdAt     DateTime        @default(now()) @map("created_at")
+    updatedAt     DateTime        @updatedAt @map("updated_at")
+    BorrowedBook  BorrowedBook[]
+    MemberPenalty MemberPenalty[]
+
+    @@map("members")
+}
+
+model Book {
+    id           Int            @id @default(autoincrement())
+    code         String         @unique @db.VarChar(150)
+    title        String         @db.VarChar(150)
+    author       String         @db.VarChar(150)
+    stock        Int            @db.TinyInt()
+    createdAt    DateTime       @default(now()) @map("created_at")
+    updatedAt    DateTime       @updatedAt @map("updated_at")
+    BorrowedBook BorrowedBook[]
+
+    @@map("books")
+}
+
+model BorrowedBook {
+    id        Int      @id @default(autoincrement())
+    member    Member   @relation(fields: [memberId], references: [id])
+    memberId  Int      @map("member_id")
+    book      Book     @relation(fields: [bookId], references: [id])
+    bookId    Int      @map("book_id")
+    qty       Int      @db.TinyInt()
+    startAt   DateTime @map("start_at")
+    endAt     DateTime @map("end_at")
+    status    String   @default("active")
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@map("member_books")
+}
+
+model MemberPenalty {
+    id       Int      @id @default(autoincrement())
+    member   Member   @relation(fields: [memberId], references: [id])
+    memberId Int      @map("member_id")
+    status   String   @default("active")
+    startAt  DateTime @map("start_at")
+    endAt    DateTime @map("end_at")
+
+    @@map("member_penalized")
+}
